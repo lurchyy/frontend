@@ -24,19 +24,36 @@ const useCases = [
 
 const chatModels = [
   "Chat GPT",
-  "Claude AI", 
+  "Claude AI",
   "Gemini",
   "Other"
 ];
+
+const providers = ["ChatGPT", "Claude", "Grok", "Gemini"] as const;
+
+const providerModels: Record<(typeof providers)[number], string[]> = {
+  ChatGPT: ["GPT-4o", "GPT-4", "GPT-3.5"],
+  Claude: ["Claude Opus 4", "Claude Sonnet 3", "Claude Haiku"],
+  Grok: ["Grok-1.5", "Grok-1"],
+  Gemini: ["Gemini 1.5 Pro", "Gemini 1.0 Pro"],
+};
 
 const PromptGenerator = () => {
   const [inputText, setInputText] = useState("");
   const [selectedIndustry, setSelectedIndustry] = useState("");
   const [selectedUseCase, setSelectedUseCase] = useState("");
   const [selectedModel, setSelectedModel] = useState("Chat GPT");
+  const [selectedProvider, setSelectedProvider] = useState<(typeof providers)[number]>("ChatGPT");
+  const [selectedProviderModel, setSelectedProviderModel] = useState(providerModels["ChatGPT"][0]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [promptTitle, setPromptTitle] = useState("");
+
+  const handleProviderChange = (value: (typeof providers)[number]) => {
+    setSelectedProvider(value);
+    const models = providerModels[value];
+    setSelectedProviderModel(models[0]);
+  };
 
   const handleGenerate = () => {
     if (!inputText.trim() || !selectedIndustry || !selectedUseCase) return;
@@ -218,21 +235,19 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                       <div className="flex-1">
                         <h4 className="font-medium text-foreground mb-3">Where to use this prompt?</h4>
                         <Card className="p-4 bg-muted/20 border border-border">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                                <span className="text-white text-xs">⚡</span>
-                              </div>
-                              <div>
-                                <div className="font-medium text-foreground">Claude AI</div>
-                                <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full inline-block">Recommended</div>
-                              </div>
-                            </div>
-                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-3">
-                            Here's your custom prompt, tailored to the use case.
-                          </p>
+                          <Select value={selectedProvider} onValueChange={handleProviderChange}>
+                            <SelectTrigger className="w-full bg-transparent border-0 text-foreground hover:bg-muted/50">
+                              <SelectValue placeholder="Select Provider" />
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
+                              {providers.map((provider) => (
+                                <SelectItem key={provider} value={provider} className="hover:bg-muted cursor-pointer">
+                                  {provider}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </Card>
                       </div>
                     </div>
@@ -243,18 +258,21 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                         2
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-foreground mb-3">Select a Claude AI model</h4>
+                        <h4 className="font-medium text-foreground mb-3">Select a {selectedProvider} model</h4>
                         <Card className="p-4 bg-muted/20 border border-border">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-medium text-foreground">Claude Opus 4</div>
-                              <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full inline-block">Recommended</div>
-                            </div>
-                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-3">
-                            Keeps the results relevant & more detailed.
-                          </p>
+                          <Select value={selectedProviderModel} onValueChange={setSelectedProviderModel}>
+                            <SelectTrigger className="w-full bg-transparent border-0 text-foreground hover:bg-muted/50">
+                              <SelectValue placeholder="Select Model" />
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
+                              {providerModels[selectedProvider].map((model) => (
+                                <SelectItem key={model} value={model} className="hover:bg-muted cursor-pointer">
+                                  {model}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </Card>
                       </div>
                     </div>
