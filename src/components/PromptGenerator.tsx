@@ -161,8 +161,9 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
 
         {/* Generated Prompt Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border border-border">
-            <DialogHeader className="flex flex-row items-center justify-between">
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-card border border-border p-0">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border">
               <DialogTitle className="text-xl font-semibold text-foreground">
                 {promptTitle}
               </DialogTitle>
@@ -179,98 +180,130 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-            </DialogHeader>
+            </div>
 
-            <div className="space-y-6 pt-4">
-              {/* Generated Prompt Display */}
-              <div className="bg-muted/30 rounded-lg p-6 relative">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="font-medium text-foreground">Generated Prompt</h3>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-muted">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {generatedPrompt}
+            {/* Two Column Layout */}
+            <div className="flex h-full">
+              {/* Left Column - Steps */}
+              <div className="w-1/2 p-6 overflow-y-auto border-r border-border">
+                <p className="text-sm text-muted-foreground italic mb-6 leading-relaxed">
+                  Here's your custom prompt, tailored to the use case, industry, and the additional context you provided.
                 </p>
+
+                {/* Prompt Preview Card */}
+                <Card className="p-4 mb-8 bg-muted/20 border border-border">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-foreground text-lg">
+                      Customer Acquisition Strategy Analysis: Hedge Fund Earnings Call Summary
+                    </h3>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted">
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Prompt</span>
+                </Card>
+
+                {/* Steps Section */}
+                <div className="space-y-6">
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                    STEPS TO USE THIS PROMPT:
+                  </h3>
+
+                  <div className="space-y-6">
+                    {/* Step 1 */}
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm font-medium">
+                        1
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-foreground mb-3">Where to use this prompt?</h4>
+                        <Card className="p-4 bg-muted/20 border border-border">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                                <span className="text-white text-xs">⚡</span>
+                              </div>
+                              <div>
+                                <div className="font-medium text-foreground">Claude AI</div>
+                                <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full inline-block">Recommended</div>
+                              </div>
+                            </div>
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-3">
+                            Here's your custom prompt, tailored to the use case.
+                          </p>
+                        </Card>
+                      </div>
+                    </div>
+
+                    {/* Step 2 */}
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm font-medium">
+                        2
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-foreground mb-3">Select a Claude AI model</h4>
+                        <Card className="p-4 bg-muted/20 border border-border">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium text-foreground">Claude Opus 4</div>
+                              <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full inline-block">Recommended</div>
+                            </div>
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-3">
+                            Keeps the results relevant & more detailed.
+                          </p>
+                        </Card>
+                      </div>
+                    </div>
+
+                    {/* Step 3 */}
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm font-medium">
+                        3
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-foreground">Paste The Prompt You Just Generated</h4>
+                      </div>
+                    </div>
+
+                    {/* Step 4 */}
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm font-medium">
+                        4
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-foreground">Submit The Prompt</h4>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Steps Section */}
-              <div className="space-y-6">
-                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                  STEPS TO USE THIS PROMPT:
-                </h3>
-
-                <div className="space-y-6">
-                  {/* Step 1 */}
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm font-medium">
-                      1
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground mb-2">Where to use this prompt?</h4>
-                      <Card className="p-4 bg-muted/20 border border-border">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs">⚡</span>
-                            </div>
-                            <div>
-                              <div className="font-medium text-foreground">Claude AI</div>
-                              <div className="text-sm text-muted-foreground">Recommended</div>
-                            </div>
-                          </div>
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Here's your custom prompt, tailored to the use case.
-                        </p>
-                      </Card>
-                    </div>
+              {/* Right Column - Generated Prompt */}
+              <div className="w-1/2 p-6 overflow-y-auto relative">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-xl font-semibold text-foreground">{promptTitle}</h3>
                   </div>
-
-                  {/* Step 2 */}
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm font-medium">
-                      2
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground mb-2">Select a Claude AI model</h4>
-                      <Card className="p-4 bg-muted/20 border border-border">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-foreground">Claude Opus 4</div>
-                            <div className="text-sm text-muted-foreground">Recommended</div>
-                          </div>
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Keeps the results relevant & more detailed.
-                        </p>
-                      </Card>
-                    </div>
-                  </div>
-
-                  {/* Step 3 */}
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm font-medium">
-                      3
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground">Paste The Prompt You Just Generated</h4>
-                    </div>
-                  </div>
-
-                  {/* Step 4 */}
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm font-medium">
-                      4
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground">Submit The Prompt</h4>
-                    </div>
+                  
+                  <div className="prose prose-sm max-w-none">
+                    <p className="text-sm text-foreground leading-relaxed mb-4">
+                      {generatedPrompt}
+                    </p>
                   </div>
                 </div>
+                
+                {/* Copy button at bottom right */}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="absolute bottom-6 right-6 h-8 w-8 p-0 hover:bg-muted"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </DialogContent>
