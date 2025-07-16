@@ -1,26 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import MarkdownRenderer from "./MarkdownRenderer";
+import React from "react";
 import { ChevronDown, ArrowRight, X, Copy, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import axios from "axios";
 
-const industries = [
-  "Private Equity",
-  "Hedge Funds",
-  "Venture Capitalist",
-  "Investment Banks",
-  "Crypto Funds"
-];
-
-const useCases = [
-  "Select Use Case",
-  "Summarising Earnings Call",
-  "Summarise Expert Call",
-  "Market Analysis",
-  "Due Diligence"
-];
+const API_URL = "http://127.0.0.1:8000/api";
 
 const chatModels = [
   "Chat GPT",
@@ -48,6 +37,35 @@ const PromptGenerator = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [promptTitle, setPromptTitle] = useState("");
+  const [industries, setIndustries] = useState<string[]>([]);
+  const [useCases, setUseCases] = useState<string[]>([]);
+  const [variables, setVariables] = useState<string[]>([]);
+  const [variableValues, setVariableValues] = useState<Record<string, string>>({});
+  const [sectorsData, setSectorsData] = useState<any[]>([]);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
+  const [isFillingVariables, setIsFillingVariables] = useState(false);
+
+  useEffect(() => {
+    fetch('/sectors.json')
+      .then((res) => res.json())
+      .then((data) => {
+        setSectorsData(data.sectors);
+        setIndustries(data.sectors.map((s: any) => s.sector));
+      })
+      .catch((error) => {
+        console.error('Error loading sectors.json:', error);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (selectedIndustry && sectorsData.length > 0) {
+      const found = sectorsData.find((s) => s.sector === selectedIndustry);
+      setUseCases(found ? found.use_cases.map((u: any) => u.use_case) : []);
+    } else {
+      setUseCases([]);
+    }
+  }, [selectedIndustry, sectorsData]);
 
   const handleProviderChange = (value: (typeof providers)[number]) => {
     setSelectedProvider(value);
@@ -55,27 +73,78 @@ const PromptGenerator = () => {
     setSelectedProviderModel(models[0]);
   };
 
-  const handleGenerate = () => {
-    if (!inputText.trim() || !selectedIndustry || !selectedUseCase) return;
-
-    const title = `Customer Acquisition Strategy Analysis: ${selectedIndustry}${selectedUseCase !== "Select Use Case" ? ` & ${selectedUseCase} Summary` : ""}`;
-    setPromptTitle(title);
-
-    const prompt = `Analyze the ${selectedIndustry.toLowerCase()} earnings of call transcript and provide a comprehensive summary focused specifically on customer acquisition strategy. This analysis should serve as a critical tool for investors, analysts, and fund managers looking to understand the fund's growth trajectory and competitive positioning in the marketplace.
-
-Structure your response to address key customer acquisition highlights, beginning with quantitative metrics such as new client onboarding numbers, conversion rates from prospects to committed capital, and year-over-year growth in client base. Examine geographic expansion efforts, identifying new markets entered, regional performance variations, and international growth opportunities. Analyze target client segments, distinguishing between institutional investors (pension funds, endowments, sovereign wealth funds) versus high-net-worth individuals, and assess any shifts in client mix strategy.
-
-Strategic initiatives should cover:
-• Marketing and business development investments, including headcount additions and budget allocations
-• Digital platform enhancements designed to improve client experience and attract tech-savvy investors  
-• Fee structure modifications to enhance competitiveness while maintaining profitability
-• Product innovation initiatives, including new fund launches or strategy diversification
-
-Evaluate performance metrics comprehensively, focusing on assets under management (AUM) growth attributable to new clients versus existing client contributions..`;
-
-    setGeneratedPrompt(prompt);
-    setIsModalOpen(true);
+  const handleGenerate = async () => {
+    setError("");
+    setGeneratedPrompt("");
+    setVariables([]);
+    setVariableValues({});
+    setIsFillingVariables(false);
+    if (!selectedIndustry || !selectedUseCase) return;
+    try {
+      const response = await axios.post(`${API_URL}/prompt-universal`, {
+        sector: selectedIndustry,
+        use_case: selectedUseCase,
+        user_input: inputText,
+      });
+      const { prompt_template, variables, use_case } = response.data;
+      setPromptTitle(`Generated Prompt for ${use_case}`);
+      if (variables && variables.length > 0) {
+        setVariables(variables);
+        setVariableValues(Object.fromEntries(variables.map((v) => [v, ""])));
+        setGeneratedPrompt(prompt_template);
+        setIsFillingVariables(true);
+      } else {
+        setGeneratedPrompt(prompt_template);
+        setVariables([]);
+        setVariableValues({});
+        setIsFillingVariables(false);
+        setIsModalOpen(true);
+      }
+    } catch (err) {
+      setError("Error generating prompt. Please try again.");
+      setGeneratedPrompt("");
+      setVariables([]);
+      setVariableValues({});
+      setIsFillingVariables(false);
+      setIsModalOpen(false);
+      console.error("Error generating prompt:", err);
+    }
   };
+
+
+  const handleVariableChange = (name: string, value: string) => {
+    setVariableValues((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFillVariables = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const response = await axios.post(`${API_URL}/prompt-fill-variables`, {
+        prompt_template: generatedPrompt,
+        variables: variableValues,
+      });
+      setGeneratedPrompt(response.data.final_prompt);
+      setVariables([]);
+      setVariableValues({});
+      setIsFillingVariables(false);
+      setIsModalOpen(true); // Only open modal after variables are filled
+    } catch (err) {
+      setError("Error filling variables. Please try again.");
+      console.error("Error filling variables:", err);
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedPrompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      setCopied(false);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -99,13 +168,14 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               className="min-h-[120px] text-lg border-0 bg-transparent resize-none placeholder:text-muted-foreground focus-visible:ring-0 p-0"
+              disabled={isFillingVariables}
             />
 
             {/* Controls Row */}
             <div className="flex flex-col md:flex-row gap-4 items-end">
               <div className="flex flex-col md:flex-row gap-4 flex-1">
                 {/* Industry Select */}
-                <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                <Select value={selectedIndustry} onValueChange={setSelectedIndustry} disabled={isFillingVariables}>
                   <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[140px]">
                     <SelectValue placeholder="Select Industry" />
                   </SelectTrigger>
@@ -123,7 +193,7 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                 </Select>
 
                 {/* Use Case Select */}
-                <Select value={selectedUseCase} onValueChange={setSelectedUseCase}>
+                <Select value={selectedUseCase} onValueChange={setSelectedUseCase} disabled={isFillingVariables}>
                   <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[160px]">
                     <SelectValue placeholder="Select Use Case" />
                   </SelectTrigger>
@@ -143,7 +213,7 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
 
               <div className="flex items-center gap-3">
                 {/* Chat Model Select */}
-                <Select value={selectedModel} onValueChange={setSelectedModel}>
+                <Select value={selectedModel} onValueChange={setSelectedModel} disabled={isFillingVariables}>
                   <SelectTrigger className="bg-transparent border-0 text-foreground hover:bg-muted/50 h-10 min-w-[100px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -163,13 +233,33 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                 {/* Generate Button */}
                 <Button
                   onClick={handleGenerate}
-                  disabled={!inputText.trim() || !selectedIndustry || !selectedUseCase}
+                  disabled={!inputText.trim() || !selectedIndustry || !selectedUseCase || isFillingVariables}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-10 w-10 p-0 disabled:opacity-30"
                 >
                   <ArrowRight className="h-5 w-5" />
                 </Button>
               </div>
             </div>
+
+            {/* Variable Fill Form (inline, as a step) */}
+            {isFillingVariables && variables.length > 0 && (
+              <form onSubmit={handleFillVariables} className="space-y-4 mt-8">
+                <h4 className="font-semibold text-foreground">Fill in required fields:</h4>
+                {variables.map((name) => (
+                  <div key={name} className="space-y-1">
+                    <label className="text-sm font-medium text-foreground">{name}</label>
+                    <input
+                      className="w-full border rounded px-2 py-1 text-sm"
+                      value={variableValues[name] || ""}
+                      onChange={e => handleVariableChange(name, e.target.value)}
+                      required
+                    />
+                  </div>
+                ))}
+                <Button type="submit" className="mt-2 bg-primary text-white">Fill Prompt</Button>
+                {error && <div className="text-red-600 text-xs mt-2">{error}</div>}
+              </form>
+            )}
           </div>
         </Card>
 
@@ -196,15 +286,37 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                 <Card className="p-4 mb-8 bg-muted/20 border border-border">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-foreground text-lg">
-                      Customer Acquisition Strategy Analysis: Hedge Fund Earnings Call Summary
+                      {promptTitle}
                     </h3>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted">
-                      <Copy className="h-3 w-3" />
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted" onClick={handleCopy}>
+                      {copied ? <span className="text-green-600 font-medium text-xs">Copied!</span> : <Copy className="h-3 w-3" />}
                     </Button>
                   </div>
                   <span className="text-xs text-muted-foreground uppercase tracking-wider">Prompt</span>
+                  <div className="mt-4 bg-muted p-4 rounded-lg text-sm font-mono">
+                    <MarkdownRenderer markdown={generatedPrompt} />
+                  </div>
+                  {error && <div className="text-red-600 text-xs mt-2">{error}</div>}
                 </Card>
 
+                {/* Variable Fill Form */}
+                {isFillingVariables && variables.length > 0 && (
+                  <form onSubmit={handleFillVariables} className="space-y-4 mb-8">
+                    <h4 className="font-semibold text-foreground">Fill in required fields:</h4>
+                    {variables.map((name) => (
+                      <div key={name} className="space-y-1">
+                        <label className="text-sm font-medium text-foreground">{name}</label>
+                        <input
+                          className="w-full border rounded px-2 py-1 text-sm"
+                          value={variableValues[name] || ""}
+                          onChange={e => handleVariableChange(name, e.target.value)}
+                          required
+                        />
+                      </div>
+                    ))}
+                    <Button type="submit" className="mt-2 bg-primary text-white">Fill Prompt</Button>
+                  </form>
+                )}
                 {/* Steps Section */}
                 <div className="space-y-6 overflow-y-auto max-h-[60vh]">
                   <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
