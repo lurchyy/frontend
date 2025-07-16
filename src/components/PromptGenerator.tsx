@@ -22,26 +22,18 @@ const useCases = [
   "Due Diligence"
 ];
 
-const providers = [
-  "chatgpt",
-  "claude", 
-  "grok",
-  "gemini"
+const chatModels = [
+  "Chat GPT",
+  "Claude AI", 
+  "Gemini",
+  "Other"
 ];
-
-const modelsByProvider = {
-  chatgpt: ["GPT-4", "GPT-3.5 Turbo", "GPT-4 Turbo"],
-  claude: ["Claude Opus 4", "Claude Sonnet 3.5", "Claude Haiku"],
-  grok: ["Grok-1", "Grok-1.5", "Grok-2"],
-  gemini: ["Gemini Pro", "Gemini Ultra", "Gemini Flash"]
-};
 
 const PromptGenerator = () => {
   const [inputText, setInputText] = useState("");
   const [selectedIndustry, setSelectedIndustry] = useState("");
   const [selectedUseCase, setSelectedUseCase] = useState("");
-  const [selectedProvider, setSelectedProvider] = useState("");
-  const [selectedModel, setSelectedModel] = useState("");
+  const [selectedModel, setSelectedModel] = useState("Chat GPT");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [promptTitle, setPromptTitle] = useState("");
@@ -135,40 +127,14 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
               </div>
 
               <div className="flex items-center gap-3">
-                {/* Provider Select */}
-                <Select value={selectedProvider} onValueChange={(value) => {
-                  setSelectedProvider(value);
-                  setSelectedModel("");
-                }}>
+                {/* Chat Model Select */}
+                <Select value={selectedModel} onValueChange={setSelectedModel}>
                   <SelectTrigger className="bg-transparent border-0 text-foreground hover:bg-muted/50 h-10 min-w-[100px]">
-                    <SelectValue placeholder="Provider" />
+                    <SelectValue />
                     <ChevronDown className="h-4 w-4 opacity-50" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
-                    {providers.map((provider) => (
-                      <SelectItem 
-                        key={provider} 
-                        value={provider}
-                        className="hover:bg-muted cursor-pointer"
-                      >
-                        {provider}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                {/* Model Select */}
-                <Select 
-                  value={selectedModel} 
-                  onValueChange={setSelectedModel}
-                  disabled={!selectedProvider}
-                >
-                  <SelectTrigger className="bg-transparent border-0 text-foreground hover:bg-muted/50 h-10 min-w-[120px] disabled:opacity-50">
-                    <SelectValue placeholder="Model" />
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
-                    {selectedProvider && modelsByProvider[selectedProvider as keyof typeof modelsByProvider]?.map((model) => (
+                    {chatModels.map((model) => (
                       <SelectItem 
                         key={model} 
                         value={model}
@@ -258,7 +224,7 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                                 <span className="text-white text-xs">⚡</span>
                               </div>
                               <div>
-                                <div className="font-medium text-foreground">{selectedProvider || "Select Provider"}</div>
+                                <div className="font-medium text-foreground">Claude AI</div>
                                 <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full inline-block">Recommended</div>
                               </div>
                             </div>
@@ -277,11 +243,11 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                         2
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-foreground mb-3">Select a {selectedProvider} model</h4>
+                        <h4 className="font-medium text-foreground mb-3">Select a Claude AI model</h4>
                         <Card className="p-4 bg-muted/20 border border-border">
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="font-medium text-foreground">{selectedModel || "Select Model"}</div>
+                              <div className="font-medium text-foreground">Claude Opus 4</div>
                               <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full inline-block">Recommended</div>
                             </div>
                             <ChevronDown className="h-4 w-4 text-muted-foreground" />
