@@ -175,7 +175,7 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
 
         {/* Generated Prompt Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-card border border-border p-0">
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto bg-card border border-border p-0">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-border">
               <DialogTitle className="text-xl font-semibold text-foreground">
@@ -206,7 +206,7 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                 </Card>
 
                 {/* Steps Section */}
-                <div className="space-y-6">
+                <div className="space-y-6 overflow-y-auto max-h-[60vh]">
                   <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                     STEPS TO USE THIS PROMPT:
                   </h3>
