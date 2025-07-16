@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 const industries = [
   "Private Equity",
-  "Hedge Funds", 
+  "Hedge Funds",
   "Venture Capitalist",
   "Investment Banks",
   "Crypto Funds"
@@ -57,10 +57,10 @@ const PromptGenerator = () => {
 
   const handleGenerate = () => {
     if (!inputText.trim() || !selectedIndustry || !selectedUseCase) return;
-    
+
     const title = `Customer Acquisition Strategy Analysis: ${selectedIndustry}${selectedUseCase !== "Select Use Case" ? ` & ${selectedUseCase} Summary` : ""}`;
     setPromptTitle(title);
-    
+
     const prompt = `Analyze the ${selectedIndustry.toLowerCase()} earnings of call transcript and provide a comprehensive summary focused specifically on customer acquisition strategy. This analysis should serve as a critical tool for investors, analysts, and fund managers looking to understand the fund's growth trajectory and competitive positioning in the marketplace.
 
 Structure your response to address key customer acquisition highlights, beginning with quantitative metrics such as new client onboarding numbers, conversion rates from prospects to committed capital, and year-over-year growth in client base. Examine geographic expansion efforts, identifying new markets entered, regional performance variations, and international growth opportunities. Analyze target client segments, distinguishing between institutional investors (pension funds, endowments, sovereign wealth funds) versus high-net-worth individuals, and assess any shifts in client mix strategy.
@@ -72,7 +72,7 @@ Strategic initiatives should cover:
 • Product innovation initiatives, including new fund launches or strategy diversification
 
 Evaluate performance metrics comprehensively, focusing on assets under management (AUM) growth attributable to new clients versus existing client contributions..`;
-    
+
     setGeneratedPrompt(prompt);
     setIsModalOpen(true);
   };
@@ -108,12 +108,11 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                 <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
                   <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[140px]">
                     <SelectValue placeholder="Select Industry" />
-                    <ChevronDown className="h-4 w-4 opacity-50" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
                     {industries.map((industry) => (
-                      <SelectItem 
-                        key={industry} 
+                      <SelectItem
+                        key={industry}
                         value={industry}
                         className="hover:bg-muted cursor-pointer"
                       >
@@ -127,12 +126,11 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                 <Select value={selectedUseCase} onValueChange={setSelectedUseCase}>
                   <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[160px]">
                     <SelectValue placeholder="Select Use Case" />
-                    <ChevronDown className="h-4 w-4 opacity-50" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
                     {useCases.map((useCase) => (
-                      <SelectItem 
-                        key={useCase} 
+                      <SelectItem
+                        key={useCase}
                         value={useCase}
                         className="hover:bg-muted cursor-pointer"
                       >
@@ -148,12 +146,11 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                 <Select value={selectedModel} onValueChange={setSelectedModel}>
                   <SelectTrigger className="bg-transparent border-0 text-foreground hover:bg-muted/50 h-10 min-w-[100px]">
                     <SelectValue />
-                    <ChevronDown className="h-4 w-4 opacity-50" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
                     {chatModels.map((model) => (
-                      <SelectItem 
-                        key={model} 
+                      <SelectItem
+                        key={model}
                         value={model}
                         className="hover:bg-muted cursor-pointer"
                       >
@@ -184,19 +181,7 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
               <DialogTitle className="text-xl font-semibold text-foreground">
                 {promptTitle}
               </DialogTitle>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-muted">
-                  <Plus className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0 hover:bg-muted"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              {/* Remove manual close/cross buttons to avoid duplicates; use Dialog's default close if available */}
             </div>
 
             {/* Two Column Layout */}
@@ -238,7 +223,6 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                           <Select value={selectedProvider} onValueChange={handleProviderChange}>
                             <SelectTrigger className="w-full bg-transparent border-0 text-foreground hover:bg-muted/50">
                               <SelectValue placeholder="Select Provider" />
-                              <ChevronDown className="h-4 w-4 opacity-50" />
                             </SelectTrigger>
                             <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
                               {providers.map((provider) => (
@@ -263,7 +247,6 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                           <Select value={selectedProviderModel} onValueChange={setSelectedProviderModel}>
                             <SelectTrigger className="w-full bg-transparent border-0 text-foreground hover:bg-muted/50">
                               <SelectValue placeholder="Select Model" />
-                              <ChevronDown className="h-4 w-4 opacity-50" />
                             </SelectTrigger>
                             <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
                               {providerModels[selectedProvider].map((model) => (
@@ -306,18 +289,18 @@ Evaluate performance metrics comprehensively, focusing on assets under managemen
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="text-xl font-semibold text-foreground">{promptTitle}</h3>
                   </div>
-                  
+
                   <div className="prose prose-sm max-w-none">
                     <p className="text-sm text-foreground leading-relaxed mb-4">
                       {generatedPrompt}
                     </p>
                   </div>
                 </div>
-                
+
                 {/* Copy button at bottom right */}
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="absolute bottom-6 right-6 h-8 w-8 p-0 hover:bg-muted"
                 >
                   <Copy className="h-4 w-4" />
