@@ -51,7 +51,12 @@ const PromptGenerator = () => {
       .then((res) => res.json())
       .then((data) => {
         setSectorsData(data.sectors);
-        setIndustries(data.sectors.map((s: any) => s.sector));
+        // Always add 'Something else' to industries
+        const sectorList = data.sectors.map((s: any) => s.sector);
+        if (!sectorList.includes('Something else')) {
+          sectorList.push('Something else');
+        }
+        setIndustries(sectorList);
       })
       .catch((error) => {
         console.error('Error loading sectors.json:', error);
@@ -61,9 +66,13 @@ const PromptGenerator = () => {
   useEffect(() => {
     if (selectedIndustry && sectorsData.length > 0) {
       const found = sectorsData.find((s) => s.sector === selectedIndustry);
-      setUseCases(found ? found.use_cases.map((u: any) => u.use_case) : []);
+      let useCaseList = found ? found.use_cases.map((u: any) => u.use_case) : [];
+      if (!useCaseList.includes('Something else')) {
+        useCaseList.push('Something else');
+      }
+      setUseCases(useCaseList);
     } else {
-      setUseCases([]);
+      setUseCases(['Something else']);
     }
   }, [selectedIndustry, sectorsData]);
 
@@ -124,7 +133,15 @@ const PromptGenerator = () => {
         prompt_template: generatedPrompt,
         variables: variableValues,
       });
-      setGeneratedPrompt(response.data.final_prompt);
+      let finalPrompt = response.data.final_prompt;
+      if (typeof finalPrompt !== 'string') {
+        if (finalPrompt && typeof finalPrompt === 'object') {
+          finalPrompt = JSON.stringify(finalPrompt, null, 2);
+        } else {
+          finalPrompt = 'Prompt is not a string.';
+        }
+      }
+      setGeneratedPrompt(finalPrompt);
       setVariables([]);
       setVariableValues({});
       setIsFillingVariables(false);
@@ -233,7 +250,17 @@ const PromptGenerator = () => {
                 {/* Generate Button */}
                 <Button
                   onClick={handleGenerate}
-                  disabled={!inputText.trim() || !selectedIndustry || !selectedUseCase || isFillingVariables}
+                  disabled={
+                    isFillingVariables ||
+                    !selectedIndustry ||
+                    // Only disable if sector is not selected
+                    // Allow submit if:
+                    // (1) both sector and use case are selected
+                    // (2) sector and input is provided
+                    // (3) sector, use case, and input is provided
+                    // So, disable only if sector is not selected
+                    false
+                  }
                   className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-10 w-10 p-0 disabled:opacity-30"
                 >
                   <ArrowRight className="h-5 w-5" />
@@ -294,7 +321,11 @@ const PromptGenerator = () => {
                   </div>
                   <span className="text-xs text-muted-foreground uppercase tracking-wider">Prompt</span>
                   <div className="mt-4 bg-muted p-4 rounded-lg text-sm font-mono">
-                    <MarkdownRenderer markdown={generatedPrompt} />
+                    {typeof generatedPrompt === 'string' ? (
+                      <MarkdownRenderer markdown={generatedPrompt} />
+                    ) : (
+                      <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
+                    )}
                   </div>
                   {error && <div className="text-red-600 text-xs mt-2">{error}</div>}
                 </Card>
@@ -403,9 +434,11 @@ const PromptGenerator = () => {
                   </div>
 
                   <div className="prose prose-sm max-w-none">
-                    <p className="text-sm text-foreground leading-relaxed mb-4">
-                      {generatedPrompt}
-                    </p>
+                    {typeof generatedPrompt === "string" ? (
+                      <MarkdownRenderer markdown={generatedPrompt} />
+                    ) : (
+                      <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
+                    )}
                   </div>
                 </div>
 
