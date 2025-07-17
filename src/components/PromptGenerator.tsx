@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import MarkdownRenderer from "./MarkdownRenderer";
+// import MarkdownRenderer from "./MarkdownRenderer";
 import React from "react";
 import { ChevronDown, ArrowRight, X, Copy, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -320,9 +320,9 @@ const PromptGenerator = () => {
                     </Button>
                   </div>
                   <span className="text-xs text-muted-foreground uppercase tracking-wider">Prompt</span>
-                  <div className="mt-4 bg-muted p-4 rounded-lg text-sm font-mono">
+                  <div className="mt-4 bg-muted p-4 rounded-lg text-sm font-mono whitespace-pre-line">
                     {typeof generatedPrompt === 'string' ? (
-                      <MarkdownRenderer markdown={generatedPrompt} />
+                      generatedPrompt
                     ) : (
                       <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
                     )}
@@ -433,9 +433,9 @@ const PromptGenerator = () => {
                     <h3 className="text-xl font-semibold text-foreground">{promptTitle}</h3>
                   </div>
 
-                  <div className="prose prose-sm max-w-none">
+                  <div className="prose prose-sm max-w-none whitespace-pre-line">
                     {typeof generatedPrompt === "string" ? (
-                      <MarkdownRenderer markdown={generatedPrompt} />
+                      generatedPrompt
                     ) : (
                       <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
                     )}
