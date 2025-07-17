@@ -27,6 +27,13 @@ const providerModels: Record<(typeof providers)[number], string[]> = {
   Gemini: ["Gemini 1.5 Pro", "Gemini 1.0 Pro"],
 };
 
+const recommendedModels: Record<(typeof providers)[number], string> = {
+  ChatGPT: "GPT-4o",
+  Claude: "Claude Opus 4",
+  Grok: "Grok-1.5",
+  Gemini: "Gemini 1.5 Pro",
+};
+
 const PromptGenerator = () => {
   const [inputText, setInputText] = useState("");
   const [selectedIndustry, setSelectedIndustry] = useState("");
@@ -389,7 +396,12 @@ const PromptGenerator = () => {
                             <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
                               {providerModels[selectedProvider].map((model) => (
                                 <SelectItem key={model} value={model} className="hover:bg-muted cursor-pointer">
-                                  {model}
+                                  <div className="flex flex-col">
+                                    <span>{model}</span>
+                                    {recommendedModels[selectedProvider] === model && (
+                                      <span className="text-xs text-muted-foreground">Recommended model</span>
+                                    )}
+                                  </div>
                                 </SelectItem>
                               ))}
                             </SelectContent>
