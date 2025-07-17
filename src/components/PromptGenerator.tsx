@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-// import MarkdownRenderer from "./MarkdownRenderer";
 import React from "react";
+import ReactMarkdown from "react-markdown";
 import { ChevronDown, ArrowRight, X, Copy, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -52,6 +52,7 @@ const PromptGenerator = () => {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [isFillingVariables, setIsFillingVariables] = useState(false);
+  const [showPromptInRight, setShowPromptInRight] = useState(true);
 
   useEffect(() => {
     fetch('/sectors.json')
@@ -316,25 +317,14 @@ const PromptGenerator = () => {
                   Here's your custom prompt, tailored to the use case, industry, and the additional context you provided.
                 </p>
 
-                {/* Prompt Preview Card */}
-                <Card className="p-4 mb-8 bg-muted/20 border border-border">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-foreground text-lg">
-                      {promptTitle}
-                    </h3>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted" onClick={handleCopy}>
-                      {copied ? <span className="text-green-600 font-medium text-xs">Copied!</span> : <Copy className="h-3 w-3" />}
-                    </Button>
-                  </div>
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Prompt</span>
-                  <div className="mt-4 bg-muted p-4 rounded-lg text-sm font-mono whitespace-pre-line">
-                    {typeof generatedPrompt === 'string' ? (
-                      generatedPrompt
-                    ) : (
-                      <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
-                    )}
-                  </div>
-                  {error && <div className="text-red-600 text-xs mt-2">{error}</div>}
+                {/* Clickable Prompt Heading */}
+                <Card 
+                  className="p-4 mb-8 bg-muted/20 border border-border cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => setShowPromptInRight(true)}
+                >
+                  <h3 className="font-semibold text-foreground text-lg">
+                    {promptTitle}
+                  </h3>
                 </Card>
 
                 {/* Variable Fill Form */}
@@ -440,28 +430,35 @@ const PromptGenerator = () => {
 
               {/* Right Column - Generated Prompt */}
               <div className="w-1/2 p-6 overflow-y-auto relative">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-semibold text-foreground">{promptTitle}</h3>
-                  </div>
+                {showPromptInRight ? (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-xl font-semibold text-foreground">{promptTitle}</h3>
+                    </div>
 
-                  <div className="prose prose-sm max-w-none whitespace-pre-line">
-                    {typeof generatedPrompt === "string" ? (
-                      generatedPrompt
-                    ) : (
-                      <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
-                    )}
-                  </div>
-                </div>
+                    <div className="prose prose-sm max-w-none text-foreground">
+                      {typeof generatedPrompt === "string" ? (
+                        <ReactMarkdown>{generatedPrompt}</ReactMarkdown>
+                      ) : (
+                        <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
+                      )}
+                    </div>
 
-                {/* Copy button at bottom right */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute bottom-6 right-6 h-8 w-8 p-0 hover:bg-muted"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
+                    {/* Copy button at bottom right */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute bottom-6 right-6 h-8 w-8 p-0 hover:bg-muted"
+                      onClick={handleCopy}
+                    >
+                      {copied ? <span className="text-green-600 font-medium text-xs">Copied!</span> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    <p>Click on the prompt title on the left to view the generated prompt</p>
+                  </div>
+                )}
               </div>
             </div>
           </DialogContent>
