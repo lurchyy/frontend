@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-// import MarkdownRenderer from "./MarkdownRenderer";
+
 import React from "react";
 import { ChevronDown, ArrowRight, X, Copy, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -97,6 +97,11 @@ const PromptGenerator = () => {
       });
       const { prompt_template, variables, use_case } = response.data;
       setPromptTitle(`Generated Prompt for ${use_case}`);
+      if (typeof prompt_template !== 'string') {
+        setError("Received an invalid prompt from the server.");
+        return;
+      }
+
       if (variables && variables.length > 0) {
         setVariables(variables);
         setVariableValues(Object.fromEntries(variables.map((v) => [v, ""])));
@@ -192,7 +197,7 @@ const PromptGenerator = () => {
             <div className="flex flex-col md:flex-row gap-4 items-end">
               <div className="flex flex-col md:flex-row gap-4 flex-1">
                 {/* Industry Select */}
-                <Select value={selectedIndustry} onValueChange={setSelectedIndustry} disabled={isFillingVariables}>
+                <Select value={String(selectedIndustry)} onValueChange={setSelectedIndustry} disabled={isFillingVariables}>
                   <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[140px]">
                     <SelectValue placeholder="Select Industry" />
                   </SelectTrigger>
@@ -203,14 +208,14 @@ const PromptGenerator = () => {
                         value={industry}
                         className="hover:bg-muted cursor-pointer"
                       >
-                        {industry}
+                        {String(industry)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
                 {/* Use Case Select */}
-                <Select value={selectedUseCase} onValueChange={setSelectedUseCase} disabled={isFillingVariables}>
+                <Select value={String(selectedUseCase)} onValueChange={setSelectedUseCase} disabled={isFillingVariables}>
                   <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[160px]">
                     <SelectValue placeholder="Select Use Case" />
                   </SelectTrigger>
@@ -221,7 +226,7 @@ const PromptGenerator = () => {
                         value={useCase}
                         className="hover:bg-muted cursor-pointer"
                       >
-                        {useCase}
+                        {String(useCase)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -232,7 +237,7 @@ const PromptGenerator = () => {
                 {/* Chat Model Select */}
                 <Select value={selectedModel} onValueChange={setSelectedModel} disabled={isFillingVariables}>
                   <SelectTrigger className="bg-transparent border-0 text-foreground hover:bg-muted/50 h-10 min-w-[100px]">
-                    <SelectValue />
+                    <SelectValue placeholder="Select Model" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
                     {chatModels.map((model) => (
@@ -241,7 +246,7 @@ const PromptGenerator = () => {
                         value={model}
                         className="hover:bg-muted cursor-pointer"
                       >
-                        {model}
+                        {String(model)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -250,17 +255,7 @@ const PromptGenerator = () => {
                 {/* Generate Button */}
                 <Button
                   onClick={handleGenerate}
-                  disabled={
-                    isFillingVariables ||
-                    !selectedIndustry ||
-                    // Only disable if sector is not selected
-                    // Allow submit if:
-                    // (1) both sector and use case are selected
-                    // (2) sector and input is provided
-                    // (3) sector, use case, and input is provided
-                    // So, disable only if sector is not selected
-                    false
-                  }
+                  disabled={isFillingVariables || !selectedIndustry}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-10 w-10 p-0 disabled:opacity-30"
                 >
                   <ArrowRight className="h-5 w-5" />
@@ -284,7 +279,7 @@ const PromptGenerator = () => {
                   </div>
                 ))}
                 <Button type="submit" className="mt-2 bg-primary text-white">Fill Prompt</Button>
-                {error && <div className="text-red-600 text-xs mt-2">{error}</div>}
+                {error && typeof error === 'string' && <div className="text-red-600 text-xs mt-2">{error}</div>}
               </form>
             )}
           </div>
@@ -296,7 +291,7 @@ const PromptGenerator = () => {
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-border">
               <DialogTitle className="text-xl font-semibold text-foreground">
-                {promptTitle}
+                {String(promptTitle)}
               </DialogTitle>
               {/* Remove manual close/cross buttons to avoid duplicates; use Dialog's default close if available */}
             </div>
@@ -313,7 +308,7 @@ const PromptGenerator = () => {
                 <Card className="p-4 mb-8 bg-muted/20 border border-border">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-foreground text-lg">
-                      {promptTitle}
+                      {String(promptTitle)}
                     </h3>
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted" onClick={handleCopy}>
                       {copied ? <span className="text-green-600 font-medium text-xs">Copied!</span> : <Copy className="h-3 w-3" />}
@@ -322,12 +317,12 @@ const PromptGenerator = () => {
                   <span className="text-xs text-muted-foreground uppercase tracking-wider">Prompt</span>
                   <div className="mt-4 bg-muted p-4 rounded-lg text-sm font-mono whitespace-pre-line">
                     {typeof generatedPrompt === 'string' ? (
-                      generatedPrompt
+                      <div>{generatedPrompt}</div>
                     ) : (
                       <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
                     )}
                   </div>
-                  {error && <div className="text-red-600 text-xs mt-2">{error}</div>}
+                  {error && typeof error === 'string' && <div className="text-red-600 text-xs mt-2">{error}</div>}
                 </Card>
 
                 {/* Variable Fill Form */}
@@ -435,7 +430,7 @@ const PromptGenerator = () => {
 
                   <div className="prose prose-sm max-w-none whitespace-pre-line">
                     {typeof generatedPrompt === "string" ? (
-                      generatedPrompt
+                      <div>{generatedPrompt}</div>
                     ) : (
                       <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
                     )}
