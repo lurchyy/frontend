@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import React from "react";
-import ReactMarkdown from "react-markdown";
 import { ChevronDown, ArrowRight, X, Copy, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -438,7 +437,9 @@ const PromptGenerator = () => {
 
                     <div className="prose prose-sm max-w-none text-foreground">
                       {typeof generatedPrompt === "string" ? (
-                        <ReactMarkdown>{generatedPrompt}</ReactMarkdown>
+                        <pre className="whitespace-pre-wrap text-sm font-mono bg-muted/30 p-4 rounded-lg">
+                          {generatedPrompt}
+                        </pre>
                       ) : (
                         <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
                       )}
