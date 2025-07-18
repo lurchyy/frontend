@@ -3,19 +3,26 @@ import React from "react";
 import { ChevronDown, ArrowRight, X, Copy, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import ReactMarkdown from "react-markdown";
 import axios from "axios";
 
 const API_URL = "http://127.0.0.1:8000/api";
 
-const chatModels = [
-  "Chat GPT",
-  "Claude AI",
-  "Gemini",
-  "Other"
-];
+const chatModels = ["Chat GPT", "Claude AI", "Gemini", "Other"];
 
 const providers = ["ChatGPT", "Claude", "Grok", "Gemini"] as const;
 
@@ -38,15 +45,20 @@ const PromptGenerator = () => {
   const [selectedIndustry, setSelectedIndustry] = useState("");
   const [selectedUseCase, setSelectedUseCase] = useState("");
   const [selectedModel, setSelectedModel] = useState("Chat GPT");
-  const [selectedProvider, setSelectedProvider] = useState<(typeof providers)[number]>("ChatGPT");
-  const [selectedProviderModel, setSelectedProviderModel] = useState(providerModels["ChatGPT"][0]);
+  const [selectedProvider, setSelectedProvider] =
+    useState<(typeof providers)[number]>("ChatGPT");
+  const [selectedProviderModel, setSelectedProviderModel] = useState(
+    providerModels["ChatGPT"][0]
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [promptTitle, setPromptTitle] = useState("");
   const [industries, setIndustries] = useState<string[]>([]);
   const [useCases, setUseCases] = useState<string[]>([]);
   const [variables, setVariables] = useState<string[]>([]);
-  const [variableValues, setVariableValues] = useState<Record<string, string>>({});
+  const [variableValues, setVariableValues] = useState<Record<string, string>>(
+    {}
+  );
   const [sectorsData, setSectorsData] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
@@ -54,32 +66,34 @@ const PromptGenerator = () => {
   const [showPromptInRight, setShowPromptInRight] = useState(true);
 
   useEffect(() => {
-    fetch('/sectors.json')
+    fetch("/sectors.json")
       .then((res) => res.json())
       .then((data) => {
         setSectorsData(data.sectors);
         // Always add 'Something else' to industries
         const sectorList = data.sectors.map((s: any) => s.sector);
-        if (!sectorList.includes('Something else')) {
-          sectorList.push('Something else');
+        if (!sectorList.includes("Something else")) {
+          sectorList.push("Something else");
         }
         setIndustries(sectorList);
       })
       .catch((error) => {
-        console.error('Error loading sectors.json:', error);
+        console.error("Error loading sectors.json:", error);
       });
   }, []);
 
   useEffect(() => {
     if (selectedIndustry && sectorsData.length > 0) {
       const found = sectorsData.find((s) => s.sector === selectedIndustry);
-      let useCaseList = found ? found.use_cases.map((u: any) => u.use_case) : [];
-      if (!useCaseList.includes('Something else')) {
-        useCaseList.push('Something else');
+      const useCaseList = found
+        ? found.use_cases.map((u: any) => u.use_case)
+        : [];
+      if (!useCaseList.includes("Something else")) {
+        useCaseList.push("Something else");
       }
       setUseCases(useCaseList);
     } else {
-      setUseCases(['Something else']);
+      setUseCases(["Something else"]);
     }
   }, [selectedIndustry, sectorsData]);
 
@@ -127,7 +141,6 @@ const PromptGenerator = () => {
     }
   };
 
-
   const handleVariableChange = (name: string, value: string) => {
     setVariableValues((prev) => ({ ...prev, [name]: value }));
   };
@@ -141,11 +154,11 @@ const PromptGenerator = () => {
         variables: variableValues,
       });
       let finalPrompt = response.data.final_prompt;
-      if (typeof finalPrompt !== 'string') {
-        if (finalPrompt && typeof finalPrompt === 'object') {
+      if (typeof finalPrompt !== "string") {
+        if (finalPrompt && typeof finalPrompt === "object") {
           finalPrompt = JSON.stringify(finalPrompt, null, 2);
         } else {
-          finalPrompt = 'Prompt is not a string.';
+          finalPrompt = "Prompt is not a string.";
         }
       }
       setGeneratedPrompt(finalPrompt);
@@ -169,7 +182,6 @@ const PromptGenerator = () => {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-4xl mx-auto">
@@ -179,7 +191,8 @@ const PromptGenerator = () => {
             PROMPT GENERATOR TOOL
           </h1>
           <p className="text-lg text-muted-foreground">
-            Generate sophisticated prompts for finance analysis & market research.
+            Generate sophisticated prompts for finance analysis & market
+            research.
           </p>
         </div>
 
@@ -199,7 +212,11 @@ const PromptGenerator = () => {
             <div className="flex flex-col md:flex-row gap-4 items-end">
               <div className="flex flex-col md:flex-row gap-4 flex-1">
                 {/* Industry Select */}
-                <Select value={selectedIndustry} onValueChange={setSelectedIndustry} disabled={isFillingVariables}>
+                <Select
+                  value={selectedIndustry}
+                  onValueChange={setSelectedIndustry}
+                  disabled={isFillingVariables}
+                >
                   <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[140px]">
                     <SelectValue placeholder="Select Industry" />
                   </SelectTrigger>
@@ -217,7 +234,11 @@ const PromptGenerator = () => {
                 </Select>
 
                 {/* Use Case Select */}
-                <Select value={selectedUseCase} onValueChange={setSelectedUseCase} disabled={isFillingVariables}>
+                <Select
+                  value={selectedUseCase}
+                  onValueChange={setSelectedUseCase}
+                  disabled={isFillingVariables}
+                >
                   <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[160px]">
                     <SelectValue placeholder="Select Use Case" />
                   </SelectTrigger>
@@ -237,7 +258,11 @@ const PromptGenerator = () => {
 
               <div className="flex items-center gap-3">
                 {/* Chat Model Select */}
-                <Select value={selectedModel} onValueChange={setSelectedModel} disabled={isFillingVariables}>
+                <Select
+                  value={selectedModel}
+                  onValueChange={setSelectedModel}
+                  disabled={isFillingVariables}
+                >
                   <SelectTrigger className="bg-transparent border-0 text-foreground hover:bg-muted/50 h-10 min-w-[100px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -278,20 +303,30 @@ const PromptGenerator = () => {
             {/* Variable Fill Form (inline, as a step) */}
             {isFillingVariables && variables.length > 0 && (
               <form onSubmit={handleFillVariables} className="space-y-4 mt-8">
-                <h4 className="font-semibold text-foreground">Fill in required fields:</h4>
+                <h4 className="font-semibold text-foreground">
+                  Fill in required fields:
+                </h4>
                 {variables.map((name) => (
                   <div key={name} className="space-y-1">
-                    <label className="text-sm font-medium text-foreground">{name}</label>
+                    <label className="text-sm font-medium text-foreground">
+                      {name}
+                    </label>
                     <input
                       className="w-full border rounded px-2 py-1 text-sm"
                       value={variableValues[name] || ""}
-                      onChange={e => handleVariableChange(name, e.target.value)}
+                      onChange={(e) =>
+                        handleVariableChange(name, e.target.value)
+                      }
                       required
                     />
                   </div>
                 ))}
-                <Button type="submit" className="mt-2 bg-primary text-white">Fill Prompt</Button>
-                {error && <div className="text-red-600 text-xs mt-2">{error}</div>}
+                <Button type="submit" className="mt-2 bg-primary text-white">
+                  Fill Prompt
+                </Button>
+                {error && (
+                  <div className="text-red-600 text-xs mt-2">{error}</div>
+                )}
               </form>
             )}
           </div>
@@ -313,11 +348,12 @@ const PromptGenerator = () => {
               {/* Left Column - Steps */}
               <div className="w-1/2 p-6 overflow-y-auto border-r border-border">
                 <p className="text-sm text-muted-foreground italic mb-6 leading-relaxed">
-                  Here's your custom prompt, tailored to the use case, industry, and the additional context you provided.
+                  Here's your custom prompt, tailored to the use case, industry,
+                  and the additional context you provided.
                 </p>
 
                 {/* Clickable Prompt Heading */}
-                <Card 
+                <Card
                   className="p-4 mb-8 bg-muted/20 border border-border cursor-pointer hover:bg-muted/30 transition-colors"
                   onClick={() => setShowPromptInRight(true)}
                 >
@@ -328,20 +364,34 @@ const PromptGenerator = () => {
 
                 {/* Variable Fill Form */}
                 {isFillingVariables && variables.length > 0 && (
-                  <form onSubmit={handleFillVariables} className="space-y-4 mb-8">
-                    <h4 className="font-semibold text-foreground">Fill in required fields:</h4>
+                  <form
+                    onSubmit={handleFillVariables}
+                    className="space-y-4 mb-8"
+                  >
+                    <h4 className="font-semibold text-foreground">
+                      Fill in required fields:
+                    </h4>
                     {variables.map((name) => (
                       <div key={name} className="space-y-1">
-                        <label className="text-sm font-medium text-foreground">{name}</label>
+                        <label className="text-sm font-medium text-foreground">
+                          {name}
+                        </label>
                         <input
                           className="w-full border rounded px-2 py-1 text-sm"
                           value={variableValues[name] || ""}
-                          onChange={e => handleVariableChange(name, e.target.value)}
+                          onChange={(e) =>
+                            handleVariableChange(name, e.target.value)
+                          }
                           required
                         />
                       </div>
                     ))}
-                    <Button type="submit" className="mt-2 bg-primary text-white">Fill Prompt</Button>
+                    <Button
+                      type="submit"
+                      className="mt-2 bg-primary text-white"
+                    >
+                      Fill Prompt
+                    </Button>
                   </form>
                 )}
                 {/* Steps Section */}
@@ -357,15 +407,24 @@ const PromptGenerator = () => {
                         1
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-foreground mb-3">Where to use this prompt?</h4>
+                        <h4 className="font-medium text-foreground mb-3">
+                          Where to use this prompt?
+                        </h4>
                         <Card className="p-4 bg-muted/20 border border-border">
-                          <Select value={selectedProvider} onValueChange={handleProviderChange}>
+                          <Select
+                            value={selectedProvider}
+                            onValueChange={handleProviderChange}
+                          >
                             <SelectTrigger className="w-full bg-transparent border-0 text-foreground hover:bg-muted/50">
                               <SelectValue placeholder="Select Provider" />
                             </SelectTrigger>
                             <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
                               {providers.map((provider) => (
-                                <SelectItem key={provider} value={provider} className="hover:bg-muted cursor-pointer">
+                                <SelectItem
+                                  key={provider}
+                                  value={provider}
+                                  className="hover:bg-muted cursor-pointer"
+                                >
                                   {provider}
                                 </SelectItem>
                               ))}
@@ -381,19 +440,31 @@ const PromptGenerator = () => {
                         2
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-foreground mb-3">Select a {selectedProvider} model</h4>
+                        <h4 className="font-medium text-foreground mb-3">
+                          Select a {selectedProvider} model
+                        </h4>
                         <Card className="p-4 bg-muted/20 border border-border">
-                          <Select value={selectedProviderModel} onValueChange={setSelectedProviderModel}>
+                          <Select
+                            value={selectedProviderModel}
+                            onValueChange={setSelectedProviderModel}
+                          >
                             <SelectTrigger className="w-full bg-transparent border-0 text-foreground hover:bg-muted/50">
                               <SelectValue placeholder="Select Model" />
                             </SelectTrigger>
                             <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
                               {providerModels[selectedProvider].map((model) => (
-                                <SelectItem key={model} value={model} className="hover:bg-muted cursor-pointer">
+                                <SelectItem
+                                  key={model}
+                                  value={model}
+                                  className="hover:bg-muted cursor-pointer"
+                                >
                                   <div className="flex flex-col">
                                     <span>{model}</span>
-                                    {recommendedModels[selectedProvider] === model && (
-                                      <span className="text-xs text-muted-foreground">Recommended model</span>
+                                    {recommendedModels[selectedProvider] ===
+                                      model && (
+                                      <span className="text-xs text-muted-foreground">
+                                        Recommended model
+                                      </span>
                                     )}
                                   </div>
                                 </SelectItem>
@@ -410,7 +481,9 @@ const PromptGenerator = () => {
                         3
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-foreground">Paste The Prompt You Just Generated</h4>
+                        <h4 className="font-medium text-foreground">
+                          Paste The Prompt You Just Generated
+                        </h4>
                       </div>
                     </div>
 
@@ -420,7 +493,9 @@ const PromptGenerator = () => {
                         4
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-foreground">Submit The Prompt</h4>
+                        <h4 className="font-medium text-foreground">
+                          Submit The Prompt
+                        </h4>
                       </div>
                     </div>
                   </div>
@@ -432,16 +507,18 @@ const PromptGenerator = () => {
                 {showPromptInRight ? (
                   <div className="space-y-4">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-xl font-semibold text-foreground">{promptTitle}</h3>
+                      <h3 className="text-xl font-semibold text-foreground">
+                        {promptTitle}
+                      </h3>
                     </div>
 
                     <div className="prose prose-sm max-w-none text-foreground">
                       {typeof generatedPrompt === "string" ? (
-                        <pre className="whitespace-pre-wrap text-sm font-mono bg-muted/30 p-4 rounded-lg">
-                          {generatedPrompt}
-                        </pre>
+                        <ReactMarkdown>{generatedPrompt}</ReactMarkdown>
                       ) : (
-                        <span className="text-red-600 text-xs">Prompt is not a string. Please try again.</span>
+                        <span className="text-red-600 text-xs">
+                          Prompt is not a string. Please try again.
+                        </span>
                       )}
                     </div>
 
@@ -452,12 +529,21 @@ const PromptGenerator = () => {
                       className="absolute bottom-6 right-6 h-8 w-8 p-0 hover:bg-muted"
                       onClick={handleCopy}
                     >
-                      {copied ? <span className="text-green-600 font-medium text-xs">Copied!</span> : <Copy className="h-4 w-4" />}
+                      {copied ? (
+                        <span className="text-green-600 font-medium text-xs">
+                          Copied!
+                        </span>
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-full text-muted-foreground">
-                    <p>Click on the prompt title on the left to view the generated prompt</p>
+                    <p>
+                      Click on the prompt title on the left to view the
+                      generated prompt
+                    </p>
                   </div>
                 )}
               </div>
