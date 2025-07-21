@@ -1,0 +1,52 @@
+[
+  {
+    "model": "ChatGPT",
+    "agents": [
+      {
+        "agent": "GPT-4o"
+      },
+      {
+        "agent": "GPT-4"
+      },
+      {
+        "agent": "GPT-3.5"
+      }
+    ]
+  },
+  {
+    "model": "Claude AI",
+    "agents": [
+      {
+        "agent": "Claude Opus 4"
+      },
+      {
+        "agent": "Claude Sonnet 3"
+      },
+      {
+        "agent": "Claude Haiku"
+      }
+    ]
+  },
+  {
+    "model": "Grok",
+    "agents": [
+      {
+        "agent": "Grok-1.5"
+      },
+      {
+        "agent": "Grok-1"
+      }
+    ]
+  },
+  {
+    "model": "Gemini",
+    "agents": [
+      {
+        "agent": "Gemini 1.5 Pro"
+      },
+      {
+        "agent": "Gemini 1.0 Pro"
+      }
+    ]
+  }
+]
