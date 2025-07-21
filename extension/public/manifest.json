@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Prompt Generator",
+  "version": "1.0",
+  "description": "A simple prompt generator",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Prompt Generator"
+  },
+  "permissions": ["activeTab"],
+  "host_permissions": ["*://*/*"]
+}
