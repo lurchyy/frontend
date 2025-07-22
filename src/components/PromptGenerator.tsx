@@ -55,6 +55,8 @@ const PromptGenerator = () => {
   const [promptTitle, setPromptTitle] = useState("");
   const [industries, setIndustries] = useState<string[]>([]);
   const [useCases, setUseCases] = useState<string[]>([]);
+  const [subUseCases, setSubUseCases] = useState<string[]>([]);
+  const [selectedSubUseCase, setSelectedSubUseCase] = useState("");
   const [variables, setVariables] = useState<string[]>([]);
   const [variableValues, setVariableValues] = useState<Record<string, string>>(
     {}
@@ -97,13 +99,31 @@ const PromptGenerator = () => {
     }
   }, [selectedIndustry, sectorsData]);
 
+  useEffect(() => {
+    if (selectedIndustry && selectedUseCase) {
+      axios
+        .get(`${API_URL}/sub-use-cases`, {
+          params: { sector: selectedIndustry, use_case: selectedUseCase },
+        })
+        .then((res) => {
+          setSubUseCases(res.data.sub_use_cases || []);
+        })
+        .catch((err) => {
+          console.error("Error fetching sub use cases:", err);
+          setSubUseCases([]);
+        });
+    } else {
+      setSubUseCases([]);
+    }
+  }, [selectedIndustry, selectedUseCase]);
+
   const handleProviderChange = (value: (typeof providers)[number]) => {
     setSelectedProvider(value);
     const models = providerModels[value];
     setSelectedProviderModel(models[0]);
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (sub?: string) => {
     setError("");
     setGeneratedPrompt("");
     setVariables([]);
@@ -114,10 +134,12 @@ const PromptGenerator = () => {
       const response = await axios.post(`${API_URL}/prompt-universal`, {
         sector: selectedIndustry,
         use_case: selectedUseCase,
+        ...(sub ? { sub_use_case: sub } : {}),
         user_input: inputText,
       });
-      const { prompt_template, variables, use_case } = response.data;
-      setPromptTitle(`Generated Prompt for ${use_case}`);
+      const { prompt_template, use_case, variables } = response.data;
+      const titlePart = sub || use_case;
+      setPromptTitle(`Generated Prompt for ${titlePart}`);
       if (variables && variables.length > 0) {
         setVariables(variables);
         setVariableValues(Object.fromEntries(variables.map((v) => [v, ""])));
@@ -139,6 +161,11 @@ const PromptGenerator = () => {
       setIsModalOpen(false);
       console.error("Error generating prompt:", err);
     }
+  };
+
+  const handleSubUseCaseClick = async (name: string) => {
+    setSelectedSubUseCase(name);
+    await handleGenerate(name);
   };
 
   const handleVariableChange = (name: string, value: string) => {
@@ -197,8 +224,9 @@ const PromptGenerator = () => {
         </div>
 
         {/* Main Form */}
-        <Card className="w-full border border-border rounded-2xl p-8 bg-card shadow-sm">
-          <div className="space-y-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          <Card className="flex-1 border border-border rounded-2xl p-8 bg-card shadow-sm">
+            <div className="space-y-6">
             {/* Text Input */}
             <Textarea
               placeholder="Add a company name, business goal, or specify anything else"
@@ -329,8 +357,26 @@ const PromptGenerator = () => {
                 )}
               </form>
             )}
-          </div>
-        </Card>
+            </div>
+          </Card>
+          {subUseCases.length > 0 && (
+            <Card className="lg:w-72 border border-border rounded-2xl p-4 h-fit bg-card shadow-sm">
+              <h4 className="font-semibold mb-3 text-foreground">Top Sub Use Cases</h4>
+              <ul className="space-y-2">
+                {subUseCases.map((su) => (
+                  <li key={su}>
+                    <button
+                      onClick={() => handleSubUseCaseClick(su)}
+                      className="text-left text-sm text-primary hover:underline w-full"
+                    >
+                      {su}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+        </div>
 
         {/* Generated Prompt Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
