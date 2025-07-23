@@ -100,6 +100,7 @@ const PromptGenerator = () => {
   }, [selectedIndustry, sectorsData]);
 
   useEffect(() => {
+    // Load sub use cases as soon as a use case is selected within a sector
     if (selectedIndustry && selectedUseCase) {
       axios
         .get(`${API_URL}/sub-use-cases`, {
@@ -115,6 +116,8 @@ const PromptGenerator = () => {
     } else {
       setSubUseCases([]);
     }
+    // Reset selected sub use case when use case or industry changes
+    setSelectedSubUseCase("");
   }, [selectedIndustry, selectedUseCase]);
 
   const handleProviderChange = (value: (typeof providers)[number]) => {
@@ -131,18 +134,22 @@ const PromptGenerator = () => {
     setIsFillingVariables(false);
     if (!selectedIndustry || !selectedUseCase) return;
     try {
-      const response = await axios.post(`${API_URL}/prompt-universal`, {
+      // If sub is undefined or empty, do not send sub_use_case in payload
+      const payload: any = {
         sector: selectedIndustry,
         use_case: selectedUseCase,
-        ...(sub ? { sub_use_case: sub } : {}),
         user_input: inputText,
-      });
+      };
+      if (sub && sub !== "") {
+        payload.sub_use_case = sub;
+      }
+      const response = await axios.post(`${API_URL}/prompt-universal`, payload);
       const { prompt_template, use_case, variables } = response.data;
       const titlePart = sub || use_case;
       setPromptTitle(`Generated Prompt for ${titlePart}`);
       if (variables && variables.length > 0) {
         setVariables(variables);
-        setVariableValues(Object.fromEntries(variables.map((v) => [v, ""])));
+        setVariableValues(Object.fromEntries(variables.map((v: string) => [v, ""])));
         setGeneratedPrompt(prompt_template);
         setIsFillingVariables(true);
       } else {
@@ -227,136 +234,129 @@ const PromptGenerator = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           <Card className="flex-1 border border-border rounded-2xl p-8 bg-card shadow-sm">
             <div className="space-y-6">
-            {/* Text Input */}
-            <Textarea
-              placeholder="Add a company name, business goal, or specify anything else"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              className="min-h-[120px] text-lg border-0 bg-transparent resize-none placeholder:text-muted-foreground focus-visible:ring-0 p-0"
-              disabled={isFillingVariables}
-            />
+              {/* Text Input */}
+              <Textarea
+                placeholder="Add a company name, business goal, or specify anything else"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                className="min-h-[120px] text-lg border-0 bg-transparent resize-none placeholder:text-muted-foreground focus-visible:ring-0 p-0"
+                disabled={isFillingVariables}
+              />
 
-            {/* Controls Row */}
-            <div className="flex flex-col md:flex-row gap-4 items-end">
-              <div className="flex flex-col md:flex-row gap-4 flex-1">
-                {/* Industry Select */}
-                <Select
-                  value={selectedIndustry}
-                  onValueChange={setSelectedIndustry}
-                  disabled={isFillingVariables}
-                >
-                  <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[140px]">
-                    <SelectValue placeholder="Select Industry" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
-                    {industries.map((industry) => (
-                      <SelectItem
-                        key={industry}
-                        value={industry}
-                        className="hover:bg-muted cursor-pointer"
-                      >
-                        {industry}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Controls Row */}
+              <div className="flex flex-col md:flex-row gap-4 items-end">
+                <div className="flex flex-col md:flex-row gap-4 flex-1">
+                  {/* Industry Select */}
+                  <Select
+                    value={selectedIndustry}
+                    onValueChange={setSelectedIndustry}
+                    disabled={isFillingVariables}
+                  >
+                    <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[140px]">
+                      <SelectValue placeholder="Select Industry" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
+                      {industries.map((industry) => (
+                        <SelectItem
+                          key={industry}
+                          value={industry}
+                          className="hover:bg-muted cursor-pointer"
+                        >
+                          {industry}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                {/* Use Case Select */}
-                <Select
-                  value={selectedUseCase}
-                  onValueChange={setSelectedUseCase}
-                  disabled={isFillingVariables}
-                >
-                  <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[160px]">
-                    <SelectValue placeholder="Select Use Case" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
-                    {useCases.map((useCase) => (
-                      <SelectItem
-                        key={useCase}
-                        value={useCase}
-                        className="hover:bg-muted cursor-pointer"
-                      >
-                        {useCase}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  {/* Use Case Select */}
+                  <Select
+                    value={selectedUseCase}
+                    onValueChange={setSelectedUseCase}
+                    disabled={isFillingVariables}
+                  >
+                    <SelectTrigger className="bg-transparent border-0 text-primary font-medium hover:bg-muted/50 h-10 min-w-[160px]">
+                      <SelectValue placeholder="Select Use Case" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
+                      {useCases.map((useCase) => (
+                        <SelectItem
+                          key={useCase}
+                          value={useCase}
+                          className="hover:bg-muted cursor-pointer"
+                        >
+                          {useCase}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {/* Chat Model Select */}
+                  <Select
+                    value={selectedModel}
+                    onValueChange={setSelectedModel}
+                    disabled={isFillingVariables}
+                  >
+                    <SelectTrigger className="bg-transparent border-0 text-foreground hover:bg-muted/50 h-10 min-w-[100px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
+                      {chatModels.map((model) => (
+                        <SelectItem
+                          key={model}
+                          value={model}
+                          className="hover:bg-muted cursor-pointer"
+                        >
+                          {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Generate Button */}
+                  <Button
+                    onClick={() => handleGenerate(selectedSubUseCase || undefined)}
+                    disabled={
+                      isFillingVariables ||
+                      !selectedIndustry
+                    }
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-10 w-10 p-0 disabled:opacity-30"
+                  >
+                    <ArrowRight className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                {/* Chat Model Select */}
-                <Select
-                  value={selectedModel}
-                  onValueChange={setSelectedModel}
-                  disabled={isFillingVariables}
-                >
-                  <SelectTrigger className="bg-transparent border-0 text-foreground hover:bg-muted/50 h-10 min-w-[100px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border border-border rounded-lg shadow-lg">
-                    {chatModels.map((model) => (
-                      <SelectItem
-                        key={model}
-                        value={model}
-                        className="hover:bg-muted cursor-pointer"
-                      >
-                        {model}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                {/* Generate Button */}
-                <Button
-                  onClick={handleGenerate}
-                  disabled={
-                    isFillingVariables ||
-                    !selectedIndustry ||
-                    // Only disable if sector is not selected
-                    // Allow submit if:
-                    // (1) both sector and use case are selected
-                    // (2) sector and input is provided
-                    // (3) sector, use case, and input is provided
-                    // So, disable only if sector is not selected
-                    false
-                  }
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-10 w-10 p-0 disabled:opacity-30"
-                >
-                  <ArrowRight className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Variable Fill Form (inline, as a step) */}
-            {isFillingVariables && variables.length > 0 && (
-              <form onSubmit={handleFillVariables} className="space-y-4 mt-8">
-                <h4 className="font-semibold text-foreground">
-                  Fill in required fields:
-                </h4>
-                {variables.map((name) => (
-                  <div key={name} className="space-y-1">
-                    <label className="text-sm font-medium text-foreground">
-                      {name}
-                    </label>
-                    <input
-                      className="w-full border rounded px-2 py-1 text-sm"
-                      value={variableValues[name] || ""}
-                      onChange={(e) =>
-                        handleVariableChange(name, e.target.value)
-                      }
-                      required
-                    />
-                  </div>
-                ))}
-                <Button type="submit" className="mt-2 bg-primary text-white">
-                  Fill Prompt
-                </Button>
-                {error && (
-                  <div className="text-red-600 text-xs mt-2">{error}</div>
-                )}
-              </form>
-            )}
+              {/* Variable Fill Form (inline, as a step) */}
+              {isFillingVariables && variables.length > 0 && (
+                <form onSubmit={handleFillVariables} className="space-y-4 mt-8">
+                  <h4 className="font-semibold text-foreground">
+                    Fill in required fields:
+                  </h4>
+                  {variables.map((name) => (
+                    <div key={name} className="space-y-1">
+                      <label className="text-sm font-medium text-foreground">
+                        {name}
+                      </label>
+                      <input
+                        className="w-full border rounded px-2 py-1 text-sm"
+                        value={variableValues[name] || ""}
+                        onChange={(e) =>
+                          handleVariableChange(name, e.target.value)
+                        }
+                        required
+                      />
+                    </div>
+                  ))}
+                  <Button type="submit" className="mt-2 bg-primary text-white">
+                    Fill Prompt
+                  </Button>
+                  {error && (
+                    <div className="text-red-600 text-xs mt-2">{error}</div>
+                  )}
+                </form>
+              )}
             </div>
           </Card>
           {subUseCases.length > 0 && (
@@ -508,10 +508,10 @@ const PromptGenerator = () => {
                                     <span>{model}</span>
                                     {recommendedModels[selectedProvider] ===
                                       model && (
-                                      <span className="text-xs text-muted-foreground">
-                                        Recommended model
-                                      </span>
-                                    )}
+                                        <span className="text-xs text-muted-foreground">
+                                          Recommended model
+                                        </span>
+                                      )}
                                   </div>
                                 </SelectItem>
                               ))}
